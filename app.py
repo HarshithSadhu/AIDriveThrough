@@ -36,7 +36,7 @@ with open('inventory.json') as inventoryFile:
 
 def convert_order_description(order_description):
     formatted_inventory = ', '.join([f'{code} {name}' for name, code in inventory.items()])
-    prompt = f"Convert the order description to the desired format (eg. 1 Cheese Taco, 2 Baja Blasts) using the following inventory items: {formatted_inventory}\n\n{order_description}\n\nConverted order: "
+    prompt = f"Convert the order description to the desired format (eg. 1 Cheese Taco, 2 Baja Blast) using the following inventory items (items should not be plural eg. 2 cheese tacos should be written as 2 cheese taco) If they add a modification, format the item like this (eg. 1 Cheese taco with beans): {formatted_inventory}\n\n{order_description}\n\nConverted order: "
     response = openai.Completion.create(
         engine="text-davinci-003",
         prompt=prompt,
@@ -44,7 +44,10 @@ def convert_order_description(order_description):
         stop=None,
         temperature=0,
     )
-    return response.choices[0].text.strip()
+    if response.choices[0].text.strip()[:-1] == '.':
+        return response.choices[0].text.strip()[:-1]
+    else:
+        return response.choices[0].text.strip()
 
 def transcribe_m4a(audio_path):
     wav_path = audio_path.replace('.m4a', '.wav')
@@ -121,7 +124,7 @@ def main():
     for item_name, item_code in inventory.items():
         print(f"{item_name}: {item_code}")
     
-    audio_path = "order.m4a"
+    audio_path = "order5.m4a"
     
     transcribed_text = transcribe_m4a(audio_path)
     print("\nTranscribed Text:")
